@@ -1,1 +1,2 @@
-# test project
+# test projects 
+me trying to learn
