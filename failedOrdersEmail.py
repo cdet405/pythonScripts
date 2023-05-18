@@ -114,7 +114,7 @@ def main():
         "?view/page=1"
       ) order_url
     FROM `project.dataset.salesOrders` 
-    WHERE order_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+    WHERE order_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 10 DAY)
     AND state='failed'
     ORDER BY 1,2,5;
     """
@@ -129,7 +129,7 @@ def main():
     subject = f"{linecount} Customer Orders In Failed Status. {now}"
     msg = 'The Following Orders Require Attention:'
     html_table = df.to_html()
-    html_body = f"""\
+    html_body = f"""
     <html>
         <body>
             <p>{msg}</p>
@@ -138,7 +138,7 @@ def main():
     </html>
     """
     if not linecount:
-        print("No Failed Orders, Email Aborted")
+        print(f"{now}: No Failed Orders, Email Aborted.")
     else:
         send_email(credentials, to, subject, html_body=html_body)
 
