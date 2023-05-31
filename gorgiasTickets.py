@@ -1,6 +1,6 @@
 """
 ############################################################
-# Version 1 - *TEST* - 2023-05-30                          # 
+# Version 1.01 - *TEST* - 2023-05-30                       # 
 # Pull all Ticket Data in Gorgias                          #
 # https://developers.gorgias.com/reference/get_api-tickets #
 # Retrieve All Tickets                                     #
@@ -54,8 +54,13 @@ while url:
         print(f"cycle: {cycle} | Est Rows: {cycle * 100}")
         time.sleep(.575)
         print("-------------------------------------------------")
-# //TODO: Last Clycle 2368 - Needs to break when next_cursor = None 
-# How ever None creates an invalid HTTP error that breaks loop. 
+        
+        if next_cursor is not None:
+            continue
+        else:
+            print("No New Cursor Found, Moving to Next Step")
+            break
+
     except requests.exceptions.HTTPError as error:
         print(f"An HTTP error occurred: {error}")
         break
