@@ -54,7 +54,8 @@ while url:
         print(f"cycle: {cycle} | Est Rows: {cycle * 100}")
         time.sleep(.575)
         print("-------------------------------------------------")
-
+# //TODO: Last Clycle 2368 - Needs to break when next_cursor = None 
+# How ever None creates an invalid HTTP error that breaks loop. 
     except requests.exceptions.HTTPError as error:
         print(f"An HTTP error occurred: {error}")
         break
