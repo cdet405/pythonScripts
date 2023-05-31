@@ -1,6 +1,6 @@
 """
 ############################################################
-# Version 1.01 - *TEST* - 2023-05-30                       # 
+# Version 1.02 - *TEST* - 2023-05-30                       # 
 # Pull all Ticket Data in Gorgias                          #
 # https://developers.gorgias.com/reference/get_api-tickets #
 # Retrieve All Tickets                                     #
@@ -12,7 +12,9 @@ import json
 import time
 from gorg import head, subdomain
 
-base_url = f"https://{subdomain}.gorgias.com/api/tickets"
+ts = int(time.time())
+end_point = 'tickets' # 'satisfaction-surveys', 'customers'
+base_url = f"https://{subdomain}.gorgias.com/api/{end_point}"
 headers = head
 
 all_tickets = []
@@ -50,11 +52,23 @@ while url:
         url = f"{base_url}{query_params}"
         cycle += 1
 
+        print(f"cycle: {cycle} | est rows: {cycle * 100}")
+        time.sleep(.05)
+        print(next_cursor)
+        time.sleep(.05)
         print(url)
-        print(f"cycle: {cycle} | Est Rows: {cycle * 100}")
-        time.sleep(.575)
-        print("-------------------------------------------------")
+        time.sleep(.05)
+        print("-------------------------------------------------------------------")
+        # sleep for .65 seconds to avoid rate limit
+        time.sleep(.5)
         
+        # used during testing or updating only fetches first 500 records 
+        # comment out for initial load
+        if cycle >= 5:
+            print('Cycle Limit Reached.')
+            break
+        
+        # break when the end of the dataset is reached
         if next_cursor is not None:
             continue
         else:
@@ -62,18 +76,23 @@ while url:
             break
 
     except requests.exceptions.HTTPError as error:
-        print(f"An HTTP error occurred: {error}")
+        print(f"** HTTP ERROR OCCURRED ** : {error}")
         break
 
 # Convert the JSON list to ndjson format
 ndjson_data = json.dumps(all_tickets)
-print('** writing data **')
+mod_data = json.loads(ndjson_data)
+print('** Writing Data **')
+
+# write data to an ez to read json file 
+with open(f'formatted-{end_point}_{ts}.json', 'w', encoding='utf-8') as f:
+    json.dump(mod_data, f, ensure_ascii=False, indent=4)
 
 # Write the ndjson data to a file
-with open('output.ndjson', 'w') as ndjson_file:
+with open(f'output-{end_point}_{ts}.ndjson', 'w', encoding='utf-8') as ndjson_file:
     for ticket in all_tickets:
-        ndjson_file.write(json.dumps(ticket) + '\n')
+        ndjson_file.write(json.dumps(ticket, ensure_ascii=False) + '\n')
         
 # maybe forget the ndjson meme and go from json to parquet? 
         
-print('done')
+print(f'Script Complete {end_point} File(s) Saved.')
