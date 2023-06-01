@@ -1,6 +1,6 @@
 """
 ############################################################
-# Version 1.02 - *TEST* - 2023-05-30                       # 
+# Version 1.03 - *TEST* - 2023-06-01                       # 
 # Pull all Ticket Data in Gorgias                          #
 # https://developers.gorgias.com/reference/get_api-tickets #
 # Retrieve All Tickets                                     #
@@ -79,18 +79,40 @@ while url:
         print(f"** HTTP ERROR OCCURRED ** : {error}")
         break
 
+
+def remove_meta_from_dict(dct):
+    if isinstance(dct, dict) and "meta" in dct:
+        del dct["meta"]
+    return dct
+
 # Convert the JSON list to ndjson format
 ndjson_data = json.dumps(all_tickets)
 mod_data = json.loads(ndjson_data)
+
+# Extract only desired columns
+extracted_data = [
+    {
+        key: remove_meta_from_dict(value) if key in {"customer", "assignee_user"} else value
+        for key, value in records.items()
+        if key in {"id", "uri", "external_id", "language", "status", "priority", "channel", "via",
+                   "from_agent", "to_agent", "customer", "assignee_user", "assignee_team", "subject",
+                   "tags", "is_unread", "spam", "created_datetime", "opened_datetime",
+                   "last_received_message_datetime", "last_message_datetime", "updated_datetime",
+                   "closed_datetime", "snooze_datetime", "trash_datetime", "integrations",
+                   "messages_count", "excerpt", "trashed_datetime"}
+    }
+    for record in mod_data
+]
+
 print('** Writing Data **')
 
 # write data to an ez to read json file 
 with open(f'formatted-{end_point}_{ts}.json', 'w', encoding='utf-8') as f:
-    json.dump(mod_data, f, ensure_ascii=False, indent=4)
+    json.dump(extracted_data, f, ensure_ascii=False, indent=4)
 
 # Write the ndjson data to a file
 with open(f'output-{end_point}_{ts}.ndjson', 'w', encoding='utf-8') as ndjson_file:
-    for ticket in all_tickets:
+    for ticket in extracted_data:
         ndjson_file.write(json.dumps(ticket, ensure_ascii=False) + '\n')
         
 # maybe forget the ndjson meme and go from json to parquet? 
