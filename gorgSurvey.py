@@ -191,5 +191,19 @@ query_job = client.query(merge_sql)
 print('Executing Merge...')
 time.sleep(5)
 print(f'Merge: {query_job.result()}')
+time.sleep(1)
+print('Executing Update: Updating body_text to NULL where Blank.')
 
+update_sql = """
+update manifest.gorgSurvey
+set body_text = null,
+mod_date = current_date()
+where length(body_text)=0;
+"""
+
+update_job = client.query(update_sql)
+print('Updating...')
+time.sleep(3)
+print(f'Update: {update_job.result()}')
+time.sleep(.5)
 print('Script Completed.')
