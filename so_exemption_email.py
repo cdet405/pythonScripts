@@ -67,87 +67,120 @@ def main():
     # noinspection PyTypeChecker
     client = bigquery.Client(project=project_id, credentials=credentials)
     query = """
- SELECT DISTINCT
-      CASE WHEN company_id = 2 THEN 'a'
-           WHEN company_id = 3 THEN 'b'
-           WHEN company_id = 4 THEN 'c'
-           WHEN company_id = 5 THEN 'd'
-           WHEN company_id = 6 THEN 'e'
-           ELSE CONCAT(
-            'ERR:[action=break][type=OOB][note:company_id{',
-            company_id,
-            '}undefined]'
-          )
-      END AS company_name,
-      CASE 
-      WHEN company_id = 3 THEN 
-        CONCAT(
-          '<a href="',
-         'https://admin.shopify.com/store/x/orders/',
-          channel_identifier,
-          '">Shopify URL</a>'
-        )
-      WHEN company_id = 5 THEN
-       CONCAT(
-          '<a href="',
-         'https://admin.shopify.com/store/x/orders/',
-          channel_identifier,
-          '">Shopify URL</a>'
-        )
-      WHEN company_id = 2 THEN
-       CONCAT(
-          '<a href="',
-         'https://admin.shopify.com/store/x/orders/',
-          channel_identifier,
-          '">Shopify URL</a>'
-        )
-      WHEN company_id = 4 THEN
-       CONCAT(
-          '<a href="',
-          'https://admin.shopify.com/store/x/orders/',
-          channel_identifier,
-          '">Shopify URL</a>'
-        )
-      WHEN company_id = 6 THEN
-       CONCAT(
-          '<a href="',
-          'https://admin.shopify.com/store/x/orders/',
-          channel_identifier,
-          '">Shopify URL</a>'
-        )
-        ELSE NULL
-      END AS shopify_order_link,
-      order_id,
-      order_reference,
-      SUM(l.amount) OVER(
-        PARTITION BY 
-          order_id
-        ) order_value,
-      order_date,
-      'Exception' as state,
-      DATE_DIFF(
-        CURRENT_DATE(),
-        order_date,
-        DAY
-      ) days_past,
-      CONCAT(
-        '<a href="',
-        'https://sub.domain.tld/client/#/model/sale.order/',
-        order_id,
-        '?views=%5B%5B1105,%22tree%22%5D,%5B1104,%22form%22%5D%5D',
-         '">FulFil URL</a>'
-      ) fulfil_order_link
-    FROM `project.dataset.sales_orders`, UNNEST(lines) l
-    WHERE (
-      state = 'draft' 
-      AND order_date IS NOT NULL 
-      AND order_reference IS NOT NULL
-      AND order_number IS NULL
-      )
-    ORDER BY 
-      6 DESC,
-      1 DESC;
-    """
+SELECT DISTINCT 
+  CASE WHEN company_id = 2 THEN 'a'
+       WHEN company_id = 3 THEN 'b'
+       WHEN company_id = 4 THEN 'c'
+       WHEN company_id = 5 THEN 'd'
+       WHEN company_id = 6 THEN 'e'
+       ELSE 
+         CONCAT(
+           'ERR:[action=break][type=OOB][note:company_id{',
+           company_id,
+           '}undefined]'
+     )
+  END AS company_name, 
+  CASE WHEN (
+    company_id = 3 
+    AND channel_name LIKE '%Shopify%'
+  ) THEN CONCAT(
+    '<a href="', 'https://admin.shopify.com/store/x/orders/', 
+    channel_identifier, '">Shopify URL</a>'
+  ) WHEN (
+    company_id = 3 
+    AND channel_name LIKE '%Amazon%'
+  ) THEN CONCAT(
+    '<a href="', 'https://sellercentral.amazon.com/orders-v3/order/', 
+    channel_identifier, '?ref=orddet', 
+    '">Amazon URL</a>'
+  ) WHEN (
+    company_id = 5 
+    AND channel_name LIKE '%Shopify%'
+  ) THEN CONCAT(
+    '<a href="', 'https://admin.shopify.com/store/x/orders/', 
+    channel_identifier, '">Shopify URL</a>'
+  ) WHEN (
+    company_id = 5 
+    AND channel_name LIKE '%Amazon%'
+  ) THEN CONCAT(
+    '<a href="', 'https://sellercentral.amazon.com/orders-v3/order/', 
+    channel_identifier, '?ref=orddet', 
+    '">Amazon URL</a>'
+  ) WHEN (
+    company_id = 2 
+    AND channel_name LIKE '%Shopify%'
+  ) THEN CONCAT(
+    '<a href="', 'https://admin.shopify.com/store/x/orders/', 
+    channel_identifier, '">Shopify URL</a>'
+  ) WHEN (
+    company_id = 2 
+    AND channel_name LIKE '%Amazon%'
+  ) THEN CONCAT(
+    '<a href="', 'https://sellercentral.amazon.com/orders-v3/order/', 
+    channel_identifier, '?ref=orddet', 
+    '">Amazon URL</a>'
+  ) WHEN (
+    company_id = 4 
+    AND channel_name LIKE '%Shopify%'
+  ) THEN CONCAT(
+    '<a href="', 'https://admin.shopify.com/store/x/orders/', 
+    channel_identifier, '">Shopify URL</a>'
+  ) WHEN (
+    company_id = 4 
+    AND channel_name LIKE '%Amazon%'
+  ) THEN CONCAT(
+    '<a href="', 'https://sellercentral.amazon.com/orders-v3/order/', 
+    channel_identifier, '?ref=orddet', 
+    '">Amazon URL</a>'
+  ) WHEN (
+    company_id = 6 
+    AND channel_name LIKE '%Shopify%'
+  ) THEN CONCAT(
+    '<a href="', 'https://admin.shopify.com/store/x/orders/', 
+    channel_identifier, '">Shopify URL</a>'
+  ) WHEN (
+    company_id = 6 
+    AND channel_name LIKE '%Amazon%'
+  ) THEN CONCAT(
+    '<a href="', 'https://sellercentral.amazon.com/orders-v3/order/', 
+    channel_identifier, '?ref=orddet', 
+    '">Amazon URL</a>'
+  ) ELSE NULL END AS marketplace_order_link, 
+  order_id, 
+  order_reference, 
+  SUM(amount) OVER (
+    PARTITION BY 
+      order_id
+    ) order_value, 
+  order_date, 
+  'Exception' as state, 
+  DATE_DIFF(
+    CURRENT_DATE(), 
+    order_date, 
+    DAY
+  ) days_past, 
+  CONCAT(
+    '<a href="',
+    'https://sub.domain.tld/client/#/model/sale.order/',
+     order_id,
+     '?views=%5B%5B1105,%22tree%22%5D,%5B1104,%22form%22%5D%5D',
+     '">FulFil URL</a>'
+   ) fulfil_order_link
+FROM 
+  `project.dataset.sales_orders`, 
+  unnest(lines) l 
+WHERE 
+  (
+    state = 'draft' 
+    AND order_date IS NOT NULL 
+    AND order_reference IS NOT NULL 
+    AND order_number IS NULL
+  ) 
+ORDER BY 
+  6 desc, 
+  1 asc
+;
+"""
     query_job = client.query(query)
     result = query_job.result()
     df = result.to_dataframe()
