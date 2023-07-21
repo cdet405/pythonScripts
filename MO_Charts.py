@@ -10,6 +10,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def chart(mo_type, data, timeseries):
+    #goal = None
+    #baseline = None
+    #filtered_type_data = None
+    #grouped_data = None
+    #pivot_data = None
+    #x = None
     if mo_type == 'PACKET':
         filtered_type_data = data.loc[data['Origin'] == "PACKET"]
         goal = 200
@@ -35,24 +41,24 @@ def chart(mo_type, data, timeseries):
     #    print(f'ERROR: {mo_type} Not Found In Data. \nPlease Try: PACKET, POUCH, HAND, KIT or MISC')
 
     if timeseries == "DAY":
-        grouped_data = filtered_type_data.groupby(["Product", "Date"])["Total Units Produced"].sum().reset_index()
-        pivot_data = grouped_data.pivot(index="Date", columns="Product", values="Total Units Produced")
+        grouped_data = filtered_type_data.groupby(["Product", "Date"])["Units per person per hour"].sum().reset_index()
+        pivot_data = grouped_data.pivot(index="Date", columns="Product", values="Units per person per hour")
         x = 1
     if timeseries == "WEEK":
-        grouped_data = filtered_type_data.groupby(["Product", "Week"])["Total Units Produced"].sum().reset_index()
-        pivot_data = grouped_data.pivot(index="Week", columns="Product", values="Total Units Produced")
-        x = 7
+        grouped_data = filtered_type_data.groupby(["Product", "Week"])["Units per person per hour"].sum().reset_index()
+        pivot_data = grouped_data.pivot(index="Week", columns="Product", values="Units per person per hour")
+        x = 1
     # this always printed?
     #else:
     #    print(f'ERROR: timeseries [{timeseries}] is not Valid.\nTry DAY or WEEK')
-    
+
 
     pivot_data.plot(kind="bar", figsize=(12, 8), width=2)
     plt.axhline(y=goal * x, linewidth=1, linestyle=":", label="Goal", color="g")
     plt.axhline(y=baseline * x, linewidth=1, linestyle="--", label="Baseline", color="r")
     plt.xlabel(timeseries)
-    plt.ylabel("Total Units Produced")
-    plt.title(f"Total Units Produced By Product ({timeseries})")
+    plt.ylabel("Units Per Person Per Hour")
+    plt.title(f"Units Per Person Per Hour ({mo_type}|{timeseries})")
     plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left")
     plt.savefig(f"{mo_type}By{timeseries}.png", bbox_inches="tight")
     print(f"Saved: {mo_type}By{timeseries}.png")
@@ -61,19 +67,28 @@ def main():
     base_data = pd.read_csv('baseDate.csv')
     pd.options.display.max_columns = None
     base_data["Date"] = pd.to_datetime(base_data["Date"], format="%m/%d/%y")
-    chart(mo_type="PACKET", data=base_data, timeseries="DAY")
-    chart(mo_type="PACKET", data=base_data, timeseries="WEEK")
-    chart(mo_type="POUCH", data=base_data, timeseries="DAY")
-    chart(mo_type="POUCH", data=base_data, timeseries="WEEK")
-    chart(mo_type="KIT", data=base_data, timeseries="DAY")
-    chart(mo_type="KIT", data=base_data, timeseries="WEEK")
-    chart(mo_type="MISC", data=base_data, timeseries="DAY")
-    chart(mo_type="MISC", data=base_data, timeseries="WEEK")
+    df = base_data.loc[(base_data['Date'] >= '6/15/2023') & (base_data['Date'] < '7/29/2023')]
+    chart(mo_type="PACKET", data=df, timeseries="DAY")
+    chart(mo_type="PACKET", data=df, timeseries="WEEK")
+    chart(mo_type="POUCH", data=df, timeseries="DAY")
+    chart(mo_type="POUCH", data=df, timeseries="WEEK")
+    chart(mo_type="KIT", data=df, timeseries="DAY")
+    chart(mo_type="KIT", data=df, timeseries="WEEK")
+    chart(mo_type="MISC", data=df, timeseries="DAY")
+    chart(mo_type="MISC", data=df, timeseries="WEEK")
     print('done')
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
 
 
 
