@@ -10,12 +10,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def chart(mo_type, data, timeseries):
-    #goal = None
-    #baseline = None
-    #filtered_type_data = None
-    #grouped_data = None
-    #pivot_data = None
-    #x = None
     if mo_type == 'PACKET':
         filtered_type_data = data.loc[data['Origin'] == "PACKET"]
         goal = 200
@@ -36,9 +30,6 @@ def chart(mo_type, data, timeseries):
         filtered_type_data = data.loc[data['Origin'] == "MISC"]
         goal = 200
         baseline = 150
-    # this always printed?
-    #else:
-    #    print(f'ERROR: {mo_type} Not Found In Data. \nPlease Try: PACKET, POUCH, HAND, KIT or MISC')
 
     if timeseries == "DAY":
         grouped_data = filtered_type_data.groupby(["Product", "Date"])["Units per person per hour"].sum().reset_index()
@@ -48,11 +39,7 @@ def chart(mo_type, data, timeseries):
         grouped_data = filtered_type_data.groupby(["Product", "Week"])["Units per person per hour"].sum().reset_index()
         pivot_data = grouped_data.pivot(index="Week", columns="Product", values="Units per person per hour")
         x = 1
-    # this always printed?
-    #else:
-    #    print(f'ERROR: timeseries [{timeseries}] is not Valid.\nTry DAY or WEEK')
-
-
+ 
     pivot_data.plot(kind="bar", figsize=(12, 8), width=2)
     plt.axhline(y=goal * x, linewidth=1, linestyle=":", label="Goal", color="g")
     plt.axhline(y=baseline * x, linewidth=1, linestyle="--", label="Baseline", color="r")
