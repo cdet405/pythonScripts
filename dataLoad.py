@@ -25,7 +25,7 @@ def data_prep():
         print(df.head(8).to_markdown(index=False))
         print(df.info())
     except Exception as e:
-        print('\nyikes!\n\n', e,)
+        print('\033[91m\nyikes!\n\n', e, '\033[0m')
         df = None
     return df
 
@@ -41,7 +41,7 @@ def data_load():
               chunksize=1000,
               index=False
               )
-    print(f'\ninserted data to {table}')
+    print(f'\033[92m\ninserted data to {table} \033[0m')
 
 
 if __name__ == '__main__':
